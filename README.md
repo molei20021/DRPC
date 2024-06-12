@@ -12,7 +12,7 @@
 |Parallel|Asynchronous|Efficient|
 </p>
 
---
+---
 
 
 # About
@@ -21,7 +21,7 @@ We have developed a distributed reinforcement learning framework, DRPC, for reso
 
 Additionally, we utilize multiple lightweight neural networks on distributed nodes to handle operations from a central node, reducing its load and speeding up resource allocation. This approach also enhances the accuracy of predicting cloud system behavior. Furthermore, we implemented a Gym-like API to translate Q-values into resource adjustments.
 
-
+---
 
 # Getting started 
 
@@ -44,7 +44,9 @@ Follow these steps to set up your Kubernetes system with our application:
 
 5. **Run the Cluster Setup**: Execute the cluster setup process according to the configurations.
 
-### Simulating with Jupyter notebook
+---
+
+## Simulating with Jupyter notebook
 
 We also provide a Jupyter notebook file that simulates the provisioning behavior on a single node, achieving up to 90% of the full system's performance.
 
