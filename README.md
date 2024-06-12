@@ -1,13 +1,13 @@
-
-
-
 <p align="center">
   <picture>
     <img alt="vLLM" src="https://github.com/vincent-haoy/DRPC/assets/53930677/87060f07-abeb-4454-b0e2-87ef2fcd056d" width=55%>
   </picture>
 </p>
+
 <p style="text-align: center;">|Parallel|Asynchronous|Efficient|</p>
+
 <p style="text-align: center;">A <ins>D</ins>istributed <ins>R</ins>esources  <ins>P</ins>rovisioning framework in Container-based <ins>C</ins>lusters</p>
+
 # About
 
 We have developed a distributed reinforcement learning framework, DRPC, for resource provisioning in container-based autoscaling. This framework precisely models system resources and allocates them dynamically to meet the demands of microservices. Our method combines reinforcement learning with a distributed algorithm that uses domain knowledge through deep imitation learning, enabling efficient and adaptive decision-making for scaling strategies across microservice clusters. 
@@ -20,7 +20,7 @@ Additionally, we utilize multiple lightweight neural networks on distributed nod
 
 Follow these steps to set up your Kubernetes system with our application:
 
-0. **Install dependencies: ** Ensure all the dependencies specified in our paper are installed properly.
+0. **Install dependencies**: Ensure all the dependencies specified in our paper are installed properly.
 
 1. **Check CgroupV2 Support**: Ensure your Kubernetes system supports CgroupV2. If not, you'll need to use a compatible alternative.
 
