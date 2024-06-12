@@ -4,9 +4,16 @@
   </picture>
 </p>
 
-<p style="text-align: center;">|Parallel|Asynchronous|Efficient|</p>
+<h3 align="center">
+  <p style="text-align: center;">A <ins>D</ins>istributed <ins>R</ins>esources  <ins>P</ins>rovisioning framework in Container-based <ins>C</ins>lusters</p>
+</h3>
 
-<p style="text-align: center;">A <ins>D</ins>istributed <ins>R</ins>esources  <ins>P</ins>rovisioning framework in Container-based <ins>C</ins>lusters</p>
+<p align="center">
+|Parallel|Asynchronous|Efficient|
+</p>
+
+--
+
 
 # About
 
