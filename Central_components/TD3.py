@@ -1,3 +1,9 @@
+import torch as T
+import torch.nn.functional as F
+import numpy as np
+from network import ActorNetwork, CriticNetwork
+from replay_buffer import ReplayBuffer
+
 class TD3:
     def __init__(self, alpha, beta, state_dim, action_dim, actor_fc1_dim, actor_fc2_dim,
                  critic_fc1_dim, critic_fc2_dim, ckpt_dir, gamma=0.99, tau=0.005, action_noise=0.2,
@@ -46,12 +52,11 @@ class TD3:
         self.actor.load_checkpoint(prefix + "actor" + suffix)
         self.target_actor.load_checkpoint(prefix + "target_actor" + suffix)
         
-        self.critic1.load_checkpointt(prefix + "critic1" + suffix)
+        self.critic1.load_checkpoint(prefix + "critic1" + suffix)
         self.critic2.load_checkpoint(prefix + "critic2" + suffix)
         
         self.target_critic1.load_checkpoint(prefix + "target_critic1" + suffix)
         self.target_critic2.load_checkpoint(prefix + "target_critic2" + suffix)
-        pass
             
  
     def update_network_parameters(self, tau=None):

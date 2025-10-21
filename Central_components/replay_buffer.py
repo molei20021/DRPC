@@ -1,5 +1,8 @@
 
  
+import numpy as np
+import os
+
 class ReplayBuffer:
     def __init__(self, max_size, state_dim, action_dim, batch_size):
         self.mem_size = max_size
@@ -14,18 +17,18 @@ class ReplayBuffer:
         
     def save_buffer(self, path):
         existing_file = 0
-        if os.path.exists(number_of_buffers.txt):
+        if os.path.exists("number_of_buffers.txt"):
             file = open("number_of_buffers.txt",mode="r")
             existing_file = int(file.readline())
             file.close()
-        np.save("state_memory_" + str(existing_file) + ".npy",a)
-        np.save("action_memory_" + str(existing_file) + ".npy",action_memory)
-        np.save("reward_memory_" + str(existing_file) + ".npy",reward_memory)
-        np.save("next_state_memory_" + str(existing_file) + ".npy",next_state_memory)
-        np.save("terminal_memory_" + str(existing_file) + ".npy",terminal_memory)
+        np.save("state_memory_" + str(existing_file) + ".npy", self.state_memory)
+        np.save("action_memory_" + str(existing_file) + ".npy", self.action_memory)
+        np.save("reward_memory_" + str(existing_file) + ".npy", self.reward_memory)
+        np.save("next_state_memory_" + str(existing_file) + ".npy", self.next_state_memory)
+        np.save("terminal_memory_" + str(existing_file) + ".npy", self.terminal_memory)
         
         file = open("number_of_buffers.txt",mode="w")
-        file.writeline(str(existing_file + 1))
+        file.writelines(str(existing_file + 1))
         file.close()
             
             

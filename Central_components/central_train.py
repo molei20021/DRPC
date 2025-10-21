@@ -1,12 +1,19 @@
 
 
-def plot_learning_curve(episodes, records, title, ylabel,scale="1"):
+import numpy as np
+import matplotlib.pyplot as plt
+import argparse
+from TD3 import TD3
+from env import SystemEnv
+
+def plot_learning_curve(episodes, records, title, ylabel, scale="1", figure_file=None):
     plt.figure()
     plt.plot(episodes, records, color='b', linestyle='-')
     plt.title(title)
     plt.xlabel('episode * '+ scale)
     plt.ylabel(ylabel)
- 
+    if figure_file:
+        plt.savefig(figure_file)
     plt.show()
 
 
@@ -22,8 +29,14 @@ def scale_action(action, low=-1, high=1):
 
 #episodes = [i+1 for i in range(EPISODE)]
 #plot_learning_curve(episodes, avg_reward_history, title='AvgReward', ylabel='reward')
-import gym
-env = System.env()
+
+# 创建参数解析器
+parser = argparse.ArgumentParser(description='DRPC Training')
+parser.add_argument('--figure-file', type=str, default='avg_reward.png', help='Path to save the figure')
+args = parser.parse_args()
+
+# 初始化环境
+env = SystemEnv()
 agent = TD3(alpha=0.0003, beta=0.0003, state_dim=env.observation_space.shape[0],
                 action_dim=env.action_space.shape[0], actor_fc1_dim=400, actor_fc2_dim=300,
                 critic_fc1_dim=400, critic_fc2_dim=300, ckpt_dir="here", gamma=0.99,

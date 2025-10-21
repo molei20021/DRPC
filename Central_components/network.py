@@ -1,5 +1,9 @@
 
 
+import torch as T
+import torch.nn as nn
+import torch.optim as optim
+
 device = T.device("cuda:0" if T.cuda.is_available() else "cpu")
  
 class ActorNetwork(nn.Module):

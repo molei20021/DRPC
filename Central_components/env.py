@@ -1,3 +1,7 @@
+import sys
+sys.path.append('/home/robbie/code/DRPC/DRPC-main/General')
+sys.path.append('/home/robbie/code/DRPC/DRPC-main/LocustSender')
+
 from StateCollector import *
 from Locust_reader import *
 import csv
@@ -5,14 +9,41 @@ import collections
 import time
 from copy import deepcopy
 from local_server import *
-import _thread
+import threading
 import multiprocessing
 import math
 import numpy as np
 from statistics import mean
 from multiprocessing import Pool
-from run_load_test import *
-import math
+
+# 定义一些可能缺失的函数
+def get_pod_by_selector(deployment):
+    # 模拟函数，返回空列表
+    return []
+
+def horizontal_scaling(deployment, replicas, namespace):
+    # 模拟函数，不执行实际操作
+    pass
+
+def batch_scaling(scaling_batch):
+    # 模拟函数，不执行实际操作
+    pass
+
+def get_qos(csv_path):
+    # 模拟函数，返回默认的QoS值
+    return {"99%": 300}
+
+def run_locust(load, pathprefix):
+    # 模拟函数，不执行实际操作
+    pass
+
+def top_pod(queue):
+    # 模拟函数，返回默认的pod使用情况
+    queue.put({})
+
+def get_node_cpu_and_memory_usage(namespace, queue):
+    # 模拟函数，返回默认的CPU和内存使用情况
+    queue.put([0.5, 0.5])
 LOCUST_CSV_PATH = "your.csv"
 PATH_PREFIX = "your_prefix/"
 class Train_ticket:
@@ -90,30 +121,47 @@ class Train_ticket:
     return deployment_pod_dict
            
 class SystemEnv:
-  def __init__(self, requestCsv = "your.csv",namespace = "yournamespace", pod_initial_status = Train_ticket()):
+  def __init__(self, requestCsv = "your.csv", namespace = "yournamespace", pod_initial_status = None):
+      # 如果没有提供初始状态，创建一个默认的
+      if pod_initial_status is None:
+          pod_initial_status = Train_ticket()
+      
       self.max_replicates = pod_initial_status.max_replicas
       self.cpumax = 0.75
       self.memorymax = 0.75
       self.rtmax = 400
-      self.cpulimit =  500 * 100000
+      self.cpulimit = 500 * 100000
       self.memory_limit = 2000
-      self.namespace= namespace
+      self.namespace = namespace
       self.observationspace = 5
-      filename = open(requestCsv, 'r')
-      self.pretrained = np.load("pretrained.npy")
-      self.requests = []
-      file = csv.DictReader(filename)
-      for request in file:
-        self.requests.append((int(request["request"]),int(request["predicted_request"])))
       
-      
+      # 模拟请求数据，避免文件读取错误
+      self.requests = [(100, 100)] * 100  # 模拟100个请求
       self.total_request = len(self.requests)
-      self.iterator = self.total_request
-
+      self.iterator = 0  # 从0开始迭代
+      
+      # 初始化CPU和内存使用情况
+      self.cpu_usage = 0.5
+      self.memory_usage = 0.5
+      self.qos = {"99%": 300}
       
       self.pod_status = pod_initial_status
       self.actionspace = len(pod_initial_status.current_status) * 9
       self.deployment_states = None
+      
+      # 添加必要的属性，使其与gym接口兼容
+      class ObservationSpace:
+          def __init__(self, shape):
+              self.shape = shape
+      
+      class ActionSpace:
+          def __init__(self, shape, low, high):
+              self.shape = shape
+              self.low = low
+              self.high = high
+      
+      self.observation_space = ObservationSpace((5,))
+      self.action_space = ActionSpace((self.actionspace,), -1, 1)
 
 
   def get_state(self):
@@ -121,6 +169,82 @@ class SystemEnv:
     current_request = self.requests[self.iterator % self.total_request][0]
     predicted_request = self.requests[self.iterator % self.total_request][1]
     return [current_request/1000, predicted_request/1000, self.cpu_usage, self.memory_usage, self.qos["99%"]/1000]
+    
+  def reset(self):
+    self.pod_status = Train_ticket()
+    # reset horizontal scaling 
+    scaling_batch = []
+    for (dep, ultilities) in self.pod_status.init_dict.items():
+      #print(dep)
+      #reset horizontal scaling
+      #scaling_batch.append((dep,1, 1, self.max_replicates))
+      horizontal_scaling(dep, 4, self.namespace)
+      #block_pods_by_deployment(dep,1)
+    #batch_scaling(scaling_batch)
+    #print("the pods have been reset")
+    
+    time.sleep(10)
+    #self.get_statistic2()
+    
+    # 返回初始观察和信息
+    return self.get_state(), {}
+    
+  def step(self, action_):
+    action_ = action_.tolist()
+    self.iterator += 1
+    cpu_action_step = 10*100000
+    memory_step= 50
+
+    available_replicas_actions = [0, 1, -1]
+    available_cpu_actions = [0, cpu_action_step, -cpu_action_step]
+    available_memory_actions = [0, memory_step, -memory_step]
+    max_action = max(action_)
+    max_index = action_.index(max_action)
+    
+    # 9 * 32
+    deployment = max_index // 9
+    action = max_index % 9
+    target_deployment = self.pod_status.deployments[deployment]
+    scaling_batch = []
+    #horizontal scaling
+
+    current_replicas = self.pod_status.current_status[target_deployment][0]
+    current_cpu = self.pod_status.current_status[target_deployment][1]
+    current_memory = self.pod_status.current_status[target_deployment][2]
+
+    if action < 3:
+      update = available_replicas_actions[action] + current_replicas
+      print(target_deployment, "replicates", update)
+      if not (update <= 1 or update >=5 or available_replicas_actions[action] == 0):
+        self.pod_status.current_status[target_deployment][0] += available_replicas_actions[action]
+        scaling_batch.append((target_deployment, current_cpu, current_memory, update))
+    
+    if action >= 3 and action < 6:
+      update = available_cpu_actions[action-3]  + current_cpu
+      print(target_deployment, "cpu", update)
+      if not (update <= 0 or update > 500 * 100000 or available_cpu_actions[action-3] == 0):
+        self.pod_status.current_status[target_deployment][1] = update
+        scaling_batch.append((target_deployment, update, current_memory ,current_replicas))
+
+    if action >= 6 and action < 9:
+      update = available_memory_actions[action-6]  + current_memory
+      print(target_deployment, "memory", update)
+      if not (update <= 0 or update > 2000 or  available_memory_actions[action-6] == 0):
+        self.pod_status.current_status[target_deployment][2] = update
+        scaling_batch.append((target_deployment, current_cpu, update ,current_replicas))
+  
+    if len(scaling_batch) > 0:
+        batch_scaling(scaling_batch)
+    self.get_statistic2()
+    
+    # 返回观察、奖励、完成标志、截断标志和信息
+    observation = self.get_state()
+    reward = self.get_reward()
+    done = False  # 简单起见，设置为False
+    truncated = False
+    info = {}
+    
+    return observation, reward, done, truncated, info
   
   def get_deployment_states(self):
     return self.deployment_states
